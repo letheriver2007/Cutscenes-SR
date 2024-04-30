@@ -2,13 +2,6 @@ import os
 import subprocess
 import cutscenes.demux as demux
 
-def handleLoopFind(folder_path):
-    for file_name in os.listdir(folder_path):
-        if file_name.endswith(".mp3") and f"{globfn}" in file_name:
-            return False
-        else:
-            return True
-
 def handleUsmExtract(usm_path):
     decrypt = demux.UsmDemuxer(usm_path)
     decrypt.export(output_path)
@@ -42,17 +35,18 @@ def handleUsmConvert():
                     break
             handleSuffixConvert(file_path, output_mp3, "adx", "mp3", file_name)
 
+    audio_config = {0: audio_cn, 1: audio_en, 2: audio_jp, 3: audio_kr}
     for video in videos:
-        if "Loop" in video and handleLoopFind(output_path):
-            pass
+        if "Loop" in video and video.endswith("_temp.mp4"):
+            new_video = video.replace("_temp.mp4", ".mp4")
+            os.rename(video, new_video)
         else:
-            audio_config = {0: audio_cn, 1: audio_en, 2: audio_jp, 3: audio_kr}
             if audio_country in audio_config:
                 new_video = video.replace("_temp.mp4", ".mp4")
                 handleMediaMerge(video, audio_config[audio_country], new_video)
 
 if __name__ == '__main__':
-    root_path = os.getcwd()
+    root_path = os.path.dirname(os.path.abspath(__file__))
     ffmpeg_path = os.path.join(root_path, "cutscenes/ffmpeg.exe")
     input_path = os.path.join(root_path, "input")
     output_path = os.path.join(root_path, "output")
@@ -75,5 +69,5 @@ if __name__ == '__main__':
     clean_flag = input("是否清理临时文件? (\033[92my\033[0m/n) ")
     if clean_flag.lower() in ['y', 'yes', '']:
         for file in os.listdir(output_path):
-            if any(suffix in file for suffix in ['temp', '.ivf', '.adx']):
+            if any(suffix in file for suffix in ['_temp', '.ivf', '.adx']):
                 os.remove(os.path.join(output_path, file))
