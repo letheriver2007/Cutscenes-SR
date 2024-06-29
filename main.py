@@ -37,7 +37,7 @@ def handleUsmConvert():
 
     audio_config = {0: audio_cn, 1: audio_en, 2: audio_jp, 3: audio_kr}
     for video in videos:
-        if "Loop" in video and video.endswith("_temp.mp4"):
+        if ("Loop" in video and video.endswith("_temp.mp4")) or (video.split("_temp")[0] in video):
             new_video = video.replace("_temp.mp4", ".mp4")
             os.rename(video, new_video)
         else:
